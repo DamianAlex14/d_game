@@ -52,8 +52,11 @@ function start() {
     const worldX = -mapX + x;
     const worldY = -mapY + y;
 
-    const column = Math.floor(worldX / 96);
-    const row = Math.floor(worldY / 96);
+const tileSize = 1457 / 15;
+
+const column = Math.floor(worldX / tileSize);
+const row = Math.floor(worldY / tileSize);
+    
 
     if (movingUp) {
         mapY = mapY + 2;
@@ -81,6 +84,8 @@ function start() {
     c.fillRect(0, 0, canvas.width, canvas.height);
 
     c.drawImage(image, mapX, mapY);
+
+    c.strokeRect(x, y, playerSize, playerSize);
 
     c.drawImage(currentImage, x, y, playerSize, playerSize);
 
