@@ -34,13 +34,15 @@ let mapY = -950
 
 const collisionsMap = [];
 
+const mapWidth = 15;
+
 for (
     let i = 0;
     i < collisions.length;
-    i = i + 15
+    i += mapWidth
 ) {
     collisionsMap.push(
-        collisions.slice(i, i + 15)
+        collisions.slice(i, i + mapWidth)
     );
 }
 
@@ -50,32 +52,46 @@ function start() {
     const y = canvas.height / 2 - playerSize / 2;
 
     const worldX = -mapX + x;
-    const worldY = -mapY + y;
-
+    const worldY = -mapY + y + 32;
+    
 const tileSize = 1457 / 15;
+
+const debugX = worldX + mapX;
+const debugY = worldY + mapY;
+
 
 const column = Math.floor(worldX / tileSize);
 const row = Math.floor(worldY / tileSize);
-    
 
-    if (movingUp) {
-        mapY = mapY + 2;
+    
+console.log(row, column);
+
+     if (
+    movingUp &&
+    collisionsMap[row]?.[column] !== 84
+    ) {
+    mapY += 2;
     }
 
-    if (movingDown) {
-        mapY = mapY - 2;
+      if (
+    movingDown &&
+    collisionsMap[row][column] !== 84
+    ) {
+    mapY = mapY - 2;
     }
 
      if (
     movingRight &&
-    collisionsMap[row][column + 0] !== 84
+    collisionsMap[row][column] !== 84
     ) {
     mapX = mapX - 2;
     }
     
-
-    if (movingLeft) {
-        mapX = mapX + 2;
+      if (
+    movingLeft &&
+    collisionsMap[row][column + 1] !== 84
+    ) {
+    mapX = mapX + 2;
     }
 
     c.clearRect(0, 0, canvas.width, canvas.height);
@@ -88,6 +104,23 @@ const row = Math.floor(worldY / tileSize);
     c.strokeRect(x, y, playerSize, playerSize);
 
     c.drawImage(currentImage, x, y, playerSize, playerSize);
+    for (let row = 0; row < 15; row++) {
+    for (let col = 0; col < 15; col++) {
+        c.strokeRect(
+            mapX + col * tileSize,
+            mapY + row * tileSize,
+            tileSize,
+            tileSize
+        );
+    }
+}
+    c.fillStyle = "red";
+    c.fillRect(
+    debugX - 2,
+    debugY - 2,
+    5,
+    5
+    );
 
     requestAnimationFrame(start);
 }
@@ -103,7 +136,6 @@ rightButton.addEventListener(
     () => {
         currentImage = getoRightImage;
         movingRight = true;
-        mapX = mapX - 2;
         console.log (movingRight)
     }
 );
@@ -121,7 +153,6 @@ leftButton.addEventListener(
     () => {
         currentImage = getoLeftImage;
         movingLeft = true;
-        mapX = mapX + 2;
         console.log(movingLeft)
     }
 );
@@ -139,7 +170,6 @@ upButton.addEventListener(
     () => {
         currentImage = getoUpImage;
         movingUp = true;
-        mapY = mapY + 2;
         console.log(movingUp)
     }
 );
@@ -157,7 +187,6 @@ downButton.addEventListener(
     () => {
         currentImage = getoDownImage;
         movingDown = true;
-        mapY = mapY - 2; 
         console.log(movingDown)
     }
 );
