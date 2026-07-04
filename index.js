@@ -17,6 +17,9 @@ const getoUpImage = new Image();
 const getoDownImage = new Image();
 const getoLeftImage = new Image();
 const getoRightImage = new Image();
+const topImage = new Image();
+const topImage2 = new Image();
+
 
 // --- Sistema de cambio de mapa ---
 let currentMap = 1;
@@ -213,13 +216,31 @@ console.log("Fila:", row, "Columna:", column);
 
     c.drawImage(currentImage, x, y, playerSize, playerSize);
 
+    if (currentMap === 1) {
+    c.drawImage(
+        topImage,
+        mapX,
+        mapY,
+        topImage.width * mapScale,
+        topImage.height * mapScale
+    );
+} else {
+    c.drawImage(
+        topImage2,
+        mapX,
+        mapY,
+        topImage2.width * mapScale,
+        topImage2.height * mapScale
+    );
+}
+
     requestAnimationFrame(start);
 }
 
 
 function check() {
     loaded++;
-    if (loaded === 6) start();
+    if (loaded === 8) start();
 }
 
 rightButton.addEventListener(
@@ -399,6 +420,8 @@ window.addEventListener(
 
 image.onload = check;
 image2.onload = check;
+topImage.onload = check;
+topImage2.onload = check;
 getoDownImage.onload = check;
 getoUpImage.onload = check;
 getoRightImage.onload = check;
@@ -406,6 +429,8 @@ getoLeftImage.onload = check;
 
 image.src = '/assets/images/Map1.png';
 image2.src = '/assets/images/Map2.png';
+topImage.src = '/assets/images/Map1CapaSup.png';
+topImage2.src = '/assets/images/Map2CapaSup.png';
 getoUpImage.src = '/assets/images/backGeto.png';
 getoDownImage.src = '/assets/images/frontGeto.png';
 getoRightImage.src = '/assets/images/rightGeto.png';
