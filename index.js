@@ -12,10 +12,26 @@ const leftButton = document.getElementById('left');
 const rightButton = document.getElementById('right');
 
 const image = new Image();
+const image2 = new Image(); // Mapa 2
 const getoUpImage = new Image();
 const getoDownImage = new Image();
 const getoLeftImage = new Image();
 const getoRightImage = new Image();
+
+// --- Sistema de cambio de mapa ---
+let currentMap = 1;
+let currentMapImage = image;
+let currentCollisionsMap; 
+// Casilla de activación (trigger tile) para pasar del Mapa 1 al Mapa 2
+const MAP1_TO_MAP2_TRIGGER_ROW = 0;
+const MAP1_TO_MAP2_TRIGGER_COLUMN = 14;
+
+// Punto de entrada al Mapa 2: se define como Fila/Columna y se calcula
+// automáticamente en píxeles más abajo (una vez que mapScale y playerSize existen).
+const MAP2_ENTRY_ROW = 29;
+const MAP2_ENTRY_COLUMN = 14;
+let MAP2_ENTRY_X; // se calcula abajo
+let MAP2_ENTRY_Y; // se calcula abajo
 
 let movingUp = false;
 let movingDown = false;
@@ -31,9 +47,28 @@ const playerSize = 64;
 let mapX = -480;
 let mapY = -440;
 
+// --- Cálculo automático del punto de entrada al Mapa 2 ---
+// tileSize: mismo cálculo que se usa dentro de start() (16 * mapScale)
+// x, y: posición fija del jugador en pantalla, igual que dentro de start()
+{
+    const tileSizeForEntry = 16 * mapScale;
+    const playerScreenX = canvas.width / 2 - playerSize / 2;
+    const playerScreenY = canvas.height / 2 - playerSize / 2;
+
+    // Centro de la celda (fila, columna) objetivo, en coordenadas del mundo/mapa
+    const targetCenterX = MAP2_ENTRY_COLUMN * tileSizeForEntry + tileSizeForEntry / 2;
+    const targetCenterY = MAP2_ENTRY_ROW * tileSizeForEntry + tileSizeForEntry / 2;
+
+    // Despejamos mapX/mapY de: centerX = -mapX + x + playerSize/2
+    MAP2_ENTRY_X = playerScreenX + playerSize / 2 - targetCenterX;
+    MAP2_ENTRY_Y = playerScreenY + playerSize / 2 - targetCenterY;
+}
+
 const collisionsMap = [];
+const collisionsMap2 = []; // Mapa 2
 
 const mapWidth = 40;
+const mapWidth2 = 40; // TODO: ajustar si el Mapa 2 tiene un ancho de cuadrícula distinto
 
 for (
     let i = 0;
@@ -44,6 +79,18 @@ for (
         collisions.slice(i, i + mapWidth)
     );
 }
+
+for (
+    let i = 0;
+    i < collisions2.length;
+    i += mapWidth2
+) {
+    collisionsMap2.push(
+        collisions2.slice(i, i + mapWidth2)
+    );
+}
+
+currentCollisionsMap = collisionsMap;
 
 function start() {
 
@@ -61,7 +108,7 @@ const column = Math.floor(centerX / tileSize);
 const hitbox = 20;
 
 // Arriba
-const rowUp = Math.floor((centerY - playerSize / 2 + hitbox + 10) / tileSize);
+const rowUp = Math.floor((centerY - playerSize / 2 + hitbox) / tileSize);
 
 // Abajo
 const rowDown = Math.floor((centerY + playerSize / 2 - hitbox + 8) / tileSize);
@@ -76,30 +123,50 @@ console.log("Fila:", row, "Columna:", column);
 
      if (
     movingUp &&
-    collisionsMap[rowUp]?.[column] !== 84
+    currentCollisionsMap[rowUp]?.[column] !== 84
     ) {
     mapY += 2;
     }
 
       if (
     movingDown &&
-    collisionsMap[rowDown][column] !== 84
+    currentCollisionsMap[rowDown][column] !== 84
     ) {
     mapY = mapY - 2;
     }
 
      if (
     movingRight &&
-    collisionsMap[row][columnRight] !== 84
+    currentCollisionsMap[row][columnRight] !== 84
     ) {
     mapX = mapX - 2;
     }
     
       if (
     movingLeft &&
-    collisionsMap[row][columnLeft] !== 84
+    currentCollisionsMap[row][columnLeft] !== 84
     ) {
     mapX = mapX + 2;
+    }
+
+    // --- Comprobación de casilla de activación (trigger tile) ---
+    // Recalculamos fila/columna del jugador dividiendo sus coordenadas
+    // actualizadas (tras aplicar el movimiento de este frame) entre el tamaño del tile.
+    const playerCenterX = -mapX + x + playerSize / 2;
+    const playerCenterY = -mapY + y + playerSize / 2;
+    const playerRow = Math.floor(playerCenterY / tileSize);
+    const playerColumn = Math.floor(playerCenterX / tileSize);
+
+    if (
+        currentMap === 1 &&
+        playerRow === MAP1_TO_MAP2_TRIGGER_ROW &&
+        playerColumn === MAP1_TO_MAP2_TRIGGER_COLUMN
+    ) {
+        currentMap = 2;
+        currentMapImage = image2;
+        currentCollisionsMap = collisionsMap2;
+        mapX = MAP2_ENTRY_X;
+        mapY = MAP2_ENTRY_Y;
     }
 
     c.clearRect(0, 0, canvas.width, canvas.height);
@@ -108,11 +175,11 @@ console.log("Fila:", row, "Columna:", column);
     c.fillRect(0, 0, canvas.width, canvas.height);
 
     c.drawImage(
-    image,
+    currentMapImage,
     mapX,
     mapY,
-    image.width * mapScale,
-    image.height * mapScale
+    currentMapImage.width * mapScale,
+    currentMapImage.height * mapScale
     );
 
     c.strokeRect(x, y, playerSize, playerSize);
@@ -125,7 +192,7 @@ console.log("Fila:", row, "Columna:", column);
 
 function check() {
     loaded++;
-    if (loaded === 5) start();
+    if (loaded === 6) start();
 }
 
 rightButton.addEventListener(
@@ -304,12 +371,14 @@ window.addEventListener(
 );
 
 image.onload = check;
+image2.onload = check;
 getoDownImage.onload = check;
 getoUpImage.onload = check;
 getoRightImage.onload = check;
 getoLeftImage.onload = check;
 
 image.src = '/assets/images/Map1.png';
+image2.src = '/assets/images/Map2.png'; 
 getoUpImage.src = '/assets/images/backGeto.png';
 getoDownImage.src = '/assets/images/frontGeto.png';
 getoRightImage.src = '/assets/images/rightGeto.png';
