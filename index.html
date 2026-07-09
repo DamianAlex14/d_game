@@ -12,23 +12,26 @@
 
     <style>
         :root {
-            --btn-up-bg: url('images/upButton.png');
-            --btn-down-bg: url('images/downButton.png');
-            --btn-left-bg: url('images/leftButton.png');
-            --btn-right-bg: url('images/rightButton.png');
-            --btn-attack-bg: url('images/starButton.png');
-            --btn-inventory-bg: url('images/inventoryButton.png');
-            --btn-pause-bg: url('images/pauseButton.png');
+        --btn-up-bg: url('images/upButton.png');
+        --btn-down-bg: url('images/downButton.png');
+        --btn-left-bg: url('images/leftButton.png');
+        --btn-right-bg: url('images/rightButton.png');
+        --btn-attack-bg: url('images/starButton.png');
+        --btn-inventory-bg: url('images/inventoryButton.png');
+        --btn-pause-bg: url('images/pauseButton.png');
 
-            /* Tamaños del D-Pad y del botón de ataque, fáciles de tocar en móvil */
-            --dpad-btn-size: 64px;
-            --attack-btn-size: 76px;
-            --top-btn-size: 48px;
+        /* clamp(mínimo, ideal-en-vmin, máximo):
+        nunca más chico ni más grande que los límites,
+        y escala proporcional en cualquier pantalla */
+        --dpad-btn-size: clamp(44px, 11vmin, 64px);
+        --attack-btn-size: clamp(52px, 13vmin, 76px);
+        --top-btn-size: clamp(34px, 8vmin, 48px);
 
-            /* Fuente pixelada: Press Start 2P primero (pixel garantizado),
-               Pixelify Sans como alternativa. */
-            --pixel-font: 'Press Start 2P', 'Pixelify Sans', 'Courier New', monospace;
-        }
+        /* espaciados también escalables */
+        --edge-gap: clamp(10px, 3vmin, 20px);
+
+        --pixel-font: 'Press Start 2P', 'Pixelify Sans', 'Courier New', monospace;
+    }
 
         * {
             box-sizing: border-box;
@@ -80,20 +83,20 @@
            D-PAD (esquina inferior izquierda), superpuesto al canvas
            ===================================================== */
         #controls {
-            position: fixed;
-            left: 20px;
-            bottom: 20px;
-            display: grid;
-            grid-template-columns: var(--dpad-btn-size) var(--dpad-btn-size) var(--dpad-btn-size);
-            grid-template-rows: var(--dpad-btn-size) var(--dpad-btn-size) var(--dpad-btn-size);
-            grid-template-areas:
-                ".    up    ."
-                "left .     right"
-                ".    down  .";
-            gap: 4px;
-            z-index: 20;
-            user-select: none;
-        }
+        position: fixed;
+        left: var(--edge-gap);
+        bottom: var(--edge-gap);
+        display: grid;
+        grid-template-columns: var(--dpad-btn-size) var(--dpad-btn-size) var(--dpad-btn-size);
+        grid-template-rows: var(--dpad-btn-size) var(--dpad-btn-size) var(--dpad-btn-size);
+        grid-template-areas:
+            ".    up    ."
+            "left .     right"
+            ".    down  .";
+        gap: 4px;
+        z-index: 20;
+        user-select: none;
+    }
 
         #controls > div {
             display: contents; /* el div envolvente de left/right no rompe el grid */
@@ -137,12 +140,12 @@
            BOTÓN DE ATAQUE (esquina inferior derecha), superpuesto al canvas
            ===================================================== */
         #attack-container {
-            position: fixed;
-            right: 24px;
-            bottom: 28px;
-            z-index: 20;
-            user-select: none;
-        }
+        position: fixed;
+        right: var(--edge-gap);
+        bottom: var(--edge-gap);
+        z-index: 20;
+        user-select: none;
+    }
 
         #attack {
             width: var(--attack-btn-size);
@@ -171,18 +174,15 @@
            BOTONES DE INVENTARIO Y PAUSA (arriba, centrados), superpuestos al canvas
            ===================================================== */
         #top-controls {
-            position: fixed;
-            /* Centra verticalmente el botón (alto var(--top-btn-size))
-               en el mismo punto Y donde el HUD dibuja los corazones/score
-               dentro del canvas (aprox. 30px desde el borde superior). */
-            top: calc(95px - (var(--top-btn-size) / 2));
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 10px;
-            z-index: 20;
-            user-select: none;
-        }
+        position: fixed;
+        top: clamp(8px, 4vh, 20px);
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 10px;
+        z-index: 20;
+        user-select: none;
+    }
 
         #top-controls button {
             width: var(--top-btn-size);
