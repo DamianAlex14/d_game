@@ -798,6 +798,7 @@ class Curse {
         this.direction = "left";
         this.speed = 1.3;
         this.radius = 14;
+        this.size = 48; 
         // FIX #1: frame legado inicia en IDLE_FRAME en vez de 0.
         this.frame = IDLE_FRAME;
         this.frameTimer = 0;
@@ -914,24 +915,21 @@ class Curse {
     }
 
     draw(mapX, mapY) {
-        if (this.state === "dying" && this.deathTimer > 30) return;
-        if (!isBlinkVisible(this)) return;
-        const screenX = mapX + this.x - 16;
-        const screenY = mapY + this.y - 16;
-        c.save();
-        if (this.state === "dying") {
-            c.globalAlpha = Math.max(0, 1 - this.deathTimer / 30);
-        }
-        // FIX #2: dibujo vía AnimationController con fallback al sprite estático.
-        // Ahora que las claves de dirección coinciden ("up"/"down"/"left"/"right"),
-        // isReady() puede resolver correctamente las 4 direcciones.
-        if (this.animation.isReady()) {
-            this.animation.draw(c, screenX, screenY, 32, 32);
-        } else {
-            c.drawImage(this.getSprite(), screenX, screenY, 32, 32);
-        }
-        c.restore();
-        if (this.state !== "dying") drawHealthBar(screenX, screenY - 8, 32, this);
+    if (this.state === "dying" && this.deathTimer > 30) return;
+    if (!isBlinkVisible(this)) return;
+    const screenX = mapX + this.x - this.size / 2;
+    const screenY = mapY + this.y - this.size / 2;
+    c.save();
+    if (this.state === "dying") {
+        c.globalAlpha = Math.max(0, 1 - this.deathTimer / 30);
+    }
+    if (this.animation.isReady()) {
+        this.animation.draw(c, screenX, screenY, this.size, this.size);
+    } else {
+        c.drawImage(this.getSprite(), screenX, screenY, this.size, this.size);
+    }
+    c.restore();
+    if (this.state !== "dying") drawHealthBar(screenX, screenY - 8, this.size, this);
     }
 }
 
