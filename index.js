@@ -216,7 +216,8 @@ class AnimationController {
 // =====================================================================
 // SISTEMA DE VIDAS / DAÑO
 // =====================================================================
-const HITS_PER_LIFE = 2;
+const HITS_PER_LIFE = 3;
+const CURSE_HITS_PER_LIFE = 1;  
 const INVULNERABILITY_MS = 1000;
 const BLINK_INTERVAL_MS = 100;
 const HIT_STUN_FRAMES = 20; // FIX: constante que faltaba y rompía applyDamage()
@@ -811,7 +812,7 @@ class Curse {
         this.lives = 1;
         this.maxLives = 1;
         this.hits = 0;
-        this.hitsPerLife = HITS_PER_LIFE;
+        this.hitsPerLife = CURSE_HITS_PER_LIFE;
         this.deathTimer = 0;
         this.animation = new AnimationController(type === "black" ? "blackRabbit" : "whiteRabbit", 100);
     }
