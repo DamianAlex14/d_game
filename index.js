@@ -103,6 +103,13 @@ const SPRITE_FRAME_COUNT = 4;
 // en vez de quedar en 0 o en un frame aleatorio.
 const IDLE_FRAME = 1;
 
+const MINIMAP_WIDTH = 160;
+const MINIMAP_HEIGHT = 90;
+const MINIMAP_MARGIN = 16;
+const MINIMAP_X = canvas.width - MINIMAP_WIDTH - MINIMAP_MARGIN;
+const MINIMAP_Y = MINIMAP_MARGIN + 30;
+const MINIMAP_DOT_SIZE = 5;
+
 const ANIMATION_IMAGES = {};
 let spritesLoaded = 0;
 let spritesTotal = 0;
@@ -942,6 +949,7 @@ class Boss {
         this.alive = true;
         this.state = "dormant";
         this.speed = 1.6;
+        this.radius = 50; 
         this.attackRange = 70;
         this.aggroRange = 260;
         this.attackCooldown = 0;
@@ -1033,25 +1041,59 @@ class Boss {
         this.animation.update(deltaTime);
     }
 
-    moveToward(target) {
+   moveToward(target) {
         const dx = target.x - this.x, dy = target.y - this.y;
         const dist = Math.hypot(dx, dy) || 1;
-        this.x += (dx / dist) * this.speed;
-        this.y += (dy / dist) * this.speed;
+        const stepX = (dx / dist) * this.speed;
+        const stepY = (dy / dist) * this.speed;
+
+        const resolved = resolveMoveWithCollisions(this.x, this.y, stepX, stepY, this.radius);
+
+        // Si el movimiento quedó bloqueado (la posición resuelta es
+        // prácticamente igual a la posición actual), el Boss esquiva el
+        // obstáculo desplazándose en la dirección PERPENDICULAR a su
+        // rumbo original, en vez de quedarse atascado contra la pared.
+        const blocked = Math.hypot(resolved.x - this.x, resolved.y - this.y) < 0.05;
+        if (blocked) {
+            const perpX = -stepY;
+            const perpY = stepX;
+            const altResolved = resolveMoveWithCollisions(this.x, this.y, perpX, perpY, this.radius);
+            this.x = altResolved.x;
+            this.y = altResolved.y;
+        } else {
+            this.x = resolved.x;
+            this.y = resolved.y;
+        }
+
         this.direction = Math.abs(dx) > Math.abs(dy)
             ? (dx < 0 ? "left" : "right")
             : (dy < 0 ? "up" : "down");
     }
 
-    moveAway(target) {
-        const dx = this.x - target.x, dy = this.y - target.y;
-        const dist = Math.hypot(dx, dy) || 1;
-        this.x += (dx / dist) * this.speed;
-        this.y += (dy / dist) * this.speed;
-        this.direction = Math.abs(dx) > Math.abs(dy)
-            ? (dx < 0 ? "left" : "right")
-            : (dy < 0 ? "up" : "down");
-    }
+        moveAway(target) {
+            const dx = this.x - target.x, dy = this.y - target.y;
+            const dist = Math.hypot(dx, dy) || 1;
+            const stepX = (dx / dist) * this.speed;
+            const stepY = (dy / dist) * this.speed;
+
+            const resolved = resolveMoveWithCollisions(this.x, this.y, stepX, stepY, this.radius);
+
+            const blocked = Math.hypot(resolved.x - this.x, resolved.y - this.y) < 0.05;
+            if (blocked) {
+                const perpX = -stepY;
+                const perpY = stepX;
+                const altResolved = resolveMoveWithCollisions(this.x, this.y, perpX, perpY, this.radius);
+                this.x = altResolved.x;
+                this.y = altResolved.y;
+            } else {
+                this.x = resolved.x;
+                this.y = resolved.y;
+            }
+
+            this.direction = Math.abs(dx) > Math.abs(dy)
+                ? (dx < 0 ? "left" : "right")
+                : (dy < 0 ? "up" : "down");
+        }
 
     tryAttack(target) {
         if (this.attackCooldown > 0) {
@@ -1106,7 +1148,7 @@ const letterImage = new Image();
 letterImage.src = "images/letter.png";
 
 const NOTES = {
-    "PN": { title: "Nota Principal", text: "Explora el mapa, encuentra a Gojo y derrota las maldiciones para conseguir más notas y puntos, puedes conseguir puntos bonus si encuentras los corazones y también te regenarán 1/3 de vida a ti o a Gojo, el botón de estrella es para atacar, debes saltar sobre las maldiciones para derrotarlas, mucha suerte. Espero te guste y te diviertas precioso 😺🌷" },
+    "PN": { title: "Nota Principal", text: "Explora el mapa, encuentra a Gojo y derrota las maldiciones para conseguir más notas y puntos, puedes conseguir puntos bonus si encuentras los corazones y también te regenarán 1/3 de vida a ti o a Gojo, el botón de estrella es para atacar, debes saltar sobre las maldiciones para derrotarlas, mucha suerte. Espero te guste y te diviertas precioso 😺🌷 (Los controles en PC son WASD para moverse y Space para saltar)" },
     1: { title: "Nota 1", text: "Eres muy fuerte y capáz, nunca te rindas" },
     2: { title: "Nota 2", text: "Eres lo más importante en mi vida" },
     3: { title: "Nota 3", text: "Adoro tu sonrisa, tus ojos y tus risos preciosos" },
@@ -1667,6 +1709,53 @@ window.addEventListener('resize', updateHUDScale);
 window.addEventListener('orientationchange', updateHUDScale);
 updateHUDScale();
 
+/**
+ * Dibuja un minimapa en la esquina superior derecha: el mapa completo
+ * escalado a MINIMAP_WIDTH x MINIMAP_HEIGHT, con un punto rojo marcando
+ * la posición real de Geto dentro del mundo.
+ */
+function drawMinimap() {
+    const mapImg = currentMapImage;
+    if (!mapImg.complete || mapImg.naturalWidth === 0) return;
+
+    // Tamaño REAL del mundo actual (en píxeles), igual al usado para
+    // dibujar el mapa grande: mapImg.width * mapScale.
+    const worldWidth = mapImg.width * mapScale;
+    const worldHeight = mapImg.height * mapScale;
+
+    c.save();
+
+    // Fondo + borde del minimapa, para que se distinga del juego detrás.
+    c.fillStyle = "rgba(0,0,0,0.5)";
+    c.fillRect(MINIMAP_X - 2, MINIMAP_Y - 2, MINIMAP_WIDTH + 4, MINIMAP_HEIGHT + 4);
+
+    // Recorta el dibujo del mapa para que no se salga del recuadro.
+    c.beginPath();
+    c.rect(MINIMAP_X, MINIMAP_Y, MINIMAP_WIDTH, MINIMAP_HEIGHT);
+    c.clip();
+
+    c.drawImage(mapImg, MINIMAP_X, MINIMAP_Y, MINIMAP_WIDTH, MINIMAP_HEIGHT);
+
+    // Posición real de Geto en el mundo, igual al cálculo de centerX/centerY en start().
+    const worldX = -mapX + (canvas.width / 2 - playerSize / 2) + playerSize / 2;
+    const worldY = -mapY + (canvas.height / 2 - playerSize / 2) + playerSize / 2;
+
+    // Convierte esa posición a la escala reducida del minimapa.
+    const dotX = MINIMAP_X + (worldX / worldWidth) * MINIMAP_WIDTH;
+    const dotY = MINIMAP_Y + (worldY / worldHeight) * MINIMAP_HEIGHT;
+
+    c.restore(); // quita el clip antes de dibujar el punto y el borde
+
+    c.fillStyle = "#e53935";
+    c.beginPath();
+    c.arc(dotX, dotY, MINIMAP_DOT_SIZE, 0, Math.PI * 2);
+    c.fill();
+
+    c.strokeStyle = "white";
+    c.lineWidth = 1;
+    c.strokeRect(MINIMAP_X, MINIMAP_Y, MINIMAP_WIDTH, MINIMAP_HEIGHT);
+}
+
 function drawHUD() {
     // Ya no se dibuja nada en el canvas: el HUD real vive en el DOM
     // (#hud-hearts y #hud-score, definidos en tu HTML). Esta función
@@ -2197,6 +2286,7 @@ function start() {
     
     drawHUD();
     drawDialogue();
+    drawMinimap();
     gojo.drawDead(mapX, mapY);
     drawGojoDeathDialogue();
     drawDocumentViewer();
