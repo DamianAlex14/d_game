@@ -1302,6 +1302,7 @@ function drawInventory() {
 
 const PICKUP_DISTANCE = 20;
 const NOTE_POINTS = 10;
+const MAP_DARKNESS = 0.35;
 
 function healGeto(amount = 1) {
     if (geto.hits > 0) {
@@ -2116,6 +2117,9 @@ function start() {
     } else {
         c.drawImage(topImage2, mapX, mapY, topImage2.width * mapScale, topImage2.height * mapScale);
     }
+
+     c.fillStyle = `rgba(0, 0, 0, ${MAP_DARKNESS})`;
+    c.fillRect(0, 0, canvas.width, canvas.height);
     
     drawHUD();
     drawDialogue();
