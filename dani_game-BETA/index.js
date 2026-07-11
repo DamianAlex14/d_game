@@ -1629,7 +1629,9 @@ function drawMinimap() {
     c.clip();
 
     c.drawImage(mapImg, MINIMAP_X, MINIMAP_Y, MINIMAP_WIDTH, MINIMAP_HEIGHT);
-
+    
+    c.fillStyle = `rgba(0, 0, 0, ${MAP_DARKNESS})`;
+    c.fillRect(MINIMAP_X, MINIMAP_Y, MINIMAP_WIDTH, MINIMAP_HEIGHT);
    
     const worldX = -mapX + (canvas.width / 2 - playerSize / 2) + playerSize / 2;
     const worldY = -mapY + (canvas.height / 2 - playerSize / 2) + playerSize / 2;
