@@ -1037,7 +1037,7 @@ const letterImage = new Image();
 letterImage.src = "images/letter.png";
 
 const NOTES = {
-    "PN": { title: "Nota Principal", text: "Explora el mapa, encuentra a Gojo y derrota las maldiciones para conseguir más notas y puntos, puedes conseguir puntos bonus si encuentras los corazones y también te regenarán 1/3 de vida a ti o a Gojo, el botón de estrella es para atacar, debes saltar sobre las maldiciones para derrotarlas, mucha suerte. (Los controles en PC son WASD para moverse y Space para saltar)" },
+    "PN": { title: "Nota Principal", text: "Explora el mapa, encuentra a Gojo y derrota las maldiciones para conseguir más notas y puntos, puedes conseguir puntos bonus si encuentras los corazones y también te regenarán 1/3 de vida a ti o a Gojo, el botón de estrella es para atacar, debes saltar sobre las maldiciones para derrotarlas, mucha suerte. (Los controles en PC son WASD para moverse y Space para saltar, con I abres inventario (botón superior con lupa) y con enter pausas.)" },
     1: { title: "Nota 1", text: "El bosque ha estado muy ruidoso últimamente." },
     2: { title: "Nota 2", text: "Una leyenda local habla de un jefe que solo despierta cuando siente una amenaza verdadera acercarse." },
     3: { title: "Nota 3", text: "Explora sin miedo. Los secretos de este lugar no se revelan a quien avanza con prisa." },
