@@ -1756,6 +1756,8 @@ function drawMinimap() {
     c.clip();
 
     c.drawImage(mapImg, MINIMAP_X, MINIMAP_Y, MINIMAP_WIDTH, MINIMAP_HEIGHT);
+    c.fillStyle = `rgba(0, 0, 0, ${MAP_DARKNESS})`;
+    c.fillRect(MINIMAP_X, MINIMAP_Y, MINIMAP_WIDTH, MINIMAP_HEIGHT);
 
     // Posición real de Geto en el mundo, igual al cálculo de centerX/centerY en start().
     const worldX = -mapX + (canvas.width / 2 - playerSize / 2) + playerSize / 2;
